@@ -1,0 +1,1 @@
+Log Insights to TimescaleDB.
