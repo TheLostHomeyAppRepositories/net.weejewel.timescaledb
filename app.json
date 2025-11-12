@@ -30,6 +30,8 @@
     "name": "Emile Nijssen",
     "email": "emile@athom.nl"
   },
+  "source": "https://github.com/weejewel/net.weejewel.timescaledb",
+  "support": "mailto:emile@emile.nl",
   "api": {
     "getConfigURI": {
       "method": "GET",
