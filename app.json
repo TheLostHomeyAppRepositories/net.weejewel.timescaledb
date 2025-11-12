@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "compatibility": ">=12.4.0",
   "sdk": 3,
+  "brandColor": "#1D1E23",
   "runtime": "node",
   "platforms": [
     "local"
@@ -28,5 +29,15 @@
   "author": {
     "name": "Emile Nijssen",
     "email": "emile@athom.nl"
+  },
+  "api": {
+    "getConfigURI": {
+      "method": "GET",
+      "path": "/config/uri"
+    },
+    "setConfigURI": {
+      "method": "PUT",
+      "path": "/config/uri"
+    }
   }
 }

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>TimescaleDB Settings</title>
+  <script
+    type="text/javascript"
+    src="/homey.js"
+    data-origin="settings"
+  ></script>
+  <style type="text/css">
+    body {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      justify-content: stretch;
+    }
+
+    #form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-self: center;
+    }
+
+    #label {
+      text-align: left;
+      align-self: flex-start;
+    }
+
+    #uri {
+      margin-bottom: 1em;
+    }
+
+    .grow {
+      flex-grow: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <form
+    id="form"
+    class="homey-form"
+  >
+    <p
+      id="title"
+      class="homey-title"
+    >TimescaleDB</p>
+    <p
+      id="subtitle"
+      class="homey-subtitle"
+    >Configure your TimescaleDB server.</p>
+
+    <label
+      id="label"
+      class="homey-form-label"
+      for="target"
+    >Connection URI</label>
+    <input
+      id="uri"
+      class="homey-form-input"
+      id="target"
+      type="text"
+      value=""
+      placeholder="postgres://user:pass@192.168.0.100:5432/homey"
+    />
+
+    <div class="grow"></div>
+
+    <button
+      id="submit"
+      type="submit"
+      class="homey-button-primary-shadow-full"
+    >Save & Connect</button>
+  </form>
+
+  <script type="text/javascript">
+    function onHomeyReady(Homey) {
+      Promise.resolve().then(async () => {
+
+        const uri = await Homey.api('GET', '/config/uri');
+        console.log({ uri })
+        document.getElementById('uri').value = uri || '';
+
+        document.getElementById('form').addEventListener('submit', e => {
+          e.preventDefault();
+
+          const uri = document.getElementById('uri').value;
+
+          document.getElementById('submit').classList.add('is-loading');
+          Promise.all([
+            Homey.api('PUT', '/config/uri', { uri }),
+            new Promise(resolve => setTimeout(resolve, 500)),
+          ])
+            .then(() => {
+              if (uri === '') {
+                Homey.alert('Disconnected from TimescaleDB.\n\nPlease enter a new URI to connect again.');
+              } else {
+                Homey.alert('Connected to TimescaleDB!\n\nThe device\'s capabilities values will now start logging.');
+              }
+            })
+            .catch(err => {
+              Homey.alert(err);
+            })
+            .finally(() => {
+              document.getElementById('submit').classList.remove('is-loading');
+            });
+        });
+
+        Homey.ready();
+      }).catch(err => {
+        console.error(err);
+        Homey.error(err);
+      });
+    }
+  </script>
+
+</body>
+
+</html>
