@@ -123,15 +123,24 @@ export default class TimescaleDBApp extends Homey.App {
     await this.table.sync();
     this.log('Homey table is ready.');
 
-    // Ensure table is a HyperTable
-    await this.sequelize
-      .query("SELECT create_hypertable('homey', 'time', if_not_exists => TRUE);")
-      .catch((err) => this.logger.error(err));
+    // Enable Hypertable and Compression
+    await Promise.resolve().then(async () => {
+      // Ensure table is a HyperTable
+      await this.sequelize
+        .query("SELECT create_hypertable('homey', 'time', if_not_exists => TRUE);")
+        .catch((err) => { throw new Error(`Error Creating Hypertable: ${err.message}`); });
 
-    // Enable Compression
-    await this.sequelize.query("ALTER TABLE homey SET (timescaledb.compress, timescaledb.compress_segmentby = 'homey_id, device_id, capability_id');").catch(err => this.error(`Error Enabling Compression: ${err}`));
-    await this.sequelize.query("SELECT add_compression_policy('homey', INTERVAL '7 days', if_not_exists => TRUE);").catch(err => this.error(`Error Adding Compression Policy: ${err}`));
-    this.log('Compression enabled on Homey table.');
+      // Enable Compression
+      await this.sequelize
+        .query("ALTER TABLE homey SET (timescaledb.compress, timescaledb.compress_segmentby = 'homey_id, device_id, capability_id');")
+        .catch(err => { throw new Error(`Error Enabling Compression: ${err.message}`); });
+
+      await this.sequelize
+        .query("SELECT add_compression_policy('homey', INTERVAL '7 days', if_not_exists => TRUE);")
+        .catch(err => { throw new Error(`Error Adding Compression Policy: ${err.message}`); });
+    })
+      .then(() => this.log('Compression enabled on Homey table.'))
+      .catch(err => this.error(`Error setting up Hypertable: ${err.message}`));
   }
 
   __initDevice(device) {
